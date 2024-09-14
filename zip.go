@@ -1,133 +1,155 @@
 package main
 
 import (
-	"bufio"
+	"archive/tar"
+	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/klauspost/compress/zstd"
 )
 
-// Create a zstd archive for files and directories
+// Create a Zstandard-compressed archive of the provided files and directories.
 func createZstdArchive(files []string, archiveName string) error {
-	zstdFile, err := os.Create(archiveName)
+	// Create the output .zst file
+	outFile, err := os.Create(archiveName)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating archive file: %v", err)
 	}
-	defer zstdFile.Close()
+	defer outFile.Close()
 
-	zstdWriter, _ := zstd.NewWriter(zstdFile)
-	defer zstdWriter.Close()
+	// Initialize the Zstandard encoder
+	enc, err := zstd.NewWriter(outFile)
+	if err != nil {
+		return fmt.Errorf("error creating zstd writer: %v", err)
+	}
+	defer enc.Close()
 
+	// Create a tar writer to archive multiple files/directories
+	tarWriter := tar.NewWriter(enc)
+	defer tarWriter.Close()
+
+	// Iterate over the provided files and add them to the tar archive
 	for _, file := range files {
-		if err := addToZstd(zstdWriter, file, ""); err != nil {
-			return err
+		err = addFileToTar(tarWriter, file)
+		if err != nil {
+			return fmt.Errorf("error adding file to archive: %v", err)
 		}
 	}
+
 	return nil
 }
 
-// Recursively add files and directories to the zstd archive
-func addToZstd(zstdWriter *zstd.Encoder, filePath string, prefix string) error {
+// Helper function to add a file or directory to the tar archive
+func addFileToTar(tarWriter *tar.Writer, filePath string) error {
 	fileInfo, err := os.Stat(filePath)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not stat file: %v", err)
 	}
 
+	// Handle directories
 	if fileInfo.IsDir() {
-		return addDirectoryToZstd(zstdWriter, filePath, prefix)
-	}
-
-	// Add a file to the zstd archive
-	return addFileToZstd(zstdWriter, filePath, prefix)
-}
-
-// Add a file to the zstd archive
-func addFileToZstd(zstdWriter *zstd.Encoder, filePath string, prefix string) error {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	relPath := filepath.Join(prefix, filePath)
-	_, err = zstdWriter.Write([]byte(relPath + "\n")) // Store file path in the stream
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(zstdWriter, file)
-	return err
-}
-
-// Add a directory and its contents to the zstd archive
-func addDirectoryToZstd(zstdWriter *zstd.Encoder, dirPath string, prefix string) error {
-	entries, err := ioutil.ReadDir(dirPath)
-	if err != nil {
-		return err
-	}
-
-	for _, entry := range entries {
-		fullPath := filepath.Join(dirPath, entry.Name())
-		if entry.IsDir() {
-			if err := addDirectoryToZstd(zstdWriter, fullPath, filepath.Join(prefix, entry.Name())); err != nil {
+		// Recursively add directory contents
+		return filepath.Walk(filePath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
 				return err
 			}
-		} else {
-			if err := addFileToZstd(zstdWriter, fullPath, prefix); err != nil {
-				return err
-			}
+			return addTarFile(tarWriter, path, info)
+		})
+	}
+
+	// Add a single file
+	return addTarFile(tarWriter, filePath, fileInfo)
+}
+
+// Helper function to add an individual file or directory to the tar writer
+func addTarFile(tarWriter *tar.Writer, filePath string, fileInfo os.FileInfo) error {
+	// Open the file (if it's not a directory)
+	var file *os.File
+	var err error
+	if !fileInfo.IsDir() {
+		file, err = os.Open(filePath)
+		if err != nil {
+			return fmt.Errorf("error opening file %s: %v", filePath, err)
+		}
+		defer file.Close()
+	}
+
+	// Create a tar header based on the file's info
+	header, err := tar.FileInfoHeader(fileInfo, fileInfo.Name())
+	if err != nil {
+		return fmt.Errorf("error creating tar header: %v", err)
+	}
+	header.Name = filePath // Full path in tar archive
+
+	// Write the tar header
+	if err := tarWriter.WriteHeader(header); err != nil {
+		return fmt.Errorf("error writing tar header: %v", err)
+	}
+
+	// Write the file contents (if it's a file)
+	if !fileInfo.IsDir() {
+		if _, err := io.Copy(tarWriter, file); err != nil {
+			return fmt.Errorf("error writing file to tar: %v", err)
 		}
 	}
+
 	return nil
 }
 
-// Extract a zstd archive to the specified directory
+// Extract a Zstandard-compressed archive to the specified directory.
 func extractZstdArchive(archiveName, targetDir string) error {
-	zstdFile, err := os.Open(archiveName)
+	// Open the compressed archive file
+	archiveFile, err := os.Open(archiveName)
 	if err != nil {
-		return err
+		return fmt.Errorf("error opening archive: %v", err)
 	}
-	defer zstdFile.Close()
+	defer archiveFile.Close()
 
-	zstdReader, err := zstd.NewReader(zstdFile)
+	// Initialize the Zstandard decoder
+	dec, err := zstd.NewReader(archiveFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating zstd reader: %v", err)
 	}
-	defer zstdReader.Close()
+	defer dec.Close()
 
-	return extractFiles(zstdReader, targetDir)
-}
+	// Create a tar reader to extract files from the tar archive
+	tarReader := tar.NewReader(dec)
 
-// Extract files from the zstd reader to the target directory
-func extractFiles(reader io.Reader, targetDir string) error {
-	scanner := bufio.NewScanner(reader)
-	for scanner.Scan() {
-		filePath := scanner.Text()
-		if err := createFileFromStream(reader, targetDir, filePath); err != nil {
-			return err
+	// Iterate over the tar archive entries and extract them
+	for {
+		header, err := tarReader.Next()
+		if err == io.EOF {
+			break // End of tar archive
+		}
+		if err != nil {
+			return fmt.Errorf("error reading tar entry: %v", err)
+		}
+
+		// Determine the full target path
+		targetPath := filepath.Join(targetDir, header.Name)
+
+		// Handle directories
+		if header.Typeflag == tar.TypeDir {
+			if err := os.MkdirAll(targetPath, os.FileMode(header.Mode)); err != nil {
+				return fmt.Errorf("error creating directory: %v", err)
+			}
+			continue
+		}
+
+		// Handle regular files
+		file, err := os.OpenFile(targetPath, os.O_CREATE|os.O_WRONLY, os.FileMode(header.Mode))
+		if err != nil {
+			return fmt.Errorf("error creating file: %v", err)
+		}
+		defer file.Close()
+
+		// Write the file contents
+		if _, err := io.Copy(file, tarReader); err != nil {
+			return fmt.Errorf("error writing file: %v", err)
 		}
 	}
-	return scanner.Err()
-}
 
-// Create files and directories from the zstd stream
-func createFileFromStream(reader io.Reader, targetDir, filePath string) error {
-	fullPath := filepath.Join(targetDir, filePath)
-	dir := filepath.Dir(fullPath)
-
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		return err
-	}
-
-	file, err := os.Create(fullPath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	_, err = io.Copy(file, reader)
-	return err
+	return nil
 }

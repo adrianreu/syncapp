@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// TODO fix this
 func extractCommand(cmd *cobra.Command, args []string) {
 	if err := os.Chdir(path); err != nil {
 		fmt.Println("Error changing directory:", err)
@@ -33,7 +34,7 @@ func extractCommand(cmd *cobra.Command, args []string) {
 
 	zipName := filepath.Join(syncConfig.CloudDir, fmt.Sprintf("%s_%s.zstd", branch, commit))
 
-	if err := extractZstdArchive(zipName, path); err != nil {
+	if err := extractZstdArchive(zipName, "."); err != nil {
 		fmt.Println("Error extracting zip archive:", err)
 		return
 	}
