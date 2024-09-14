@@ -51,7 +51,7 @@ func syncCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	zipName := filepath.Join(syncConfig.CloudDir, fmt.Sprintf("%s_%s.zip", branch, commit))
+	zipName := filepath.Join(syncConfig.CloudDir, fmt.Sprintf("%s_%s.zstd", branch, commit))
 
 	if syncConfig.KeepLatest {
 		if err := removePreviousZipFiles(branch); err != nil {
@@ -60,7 +60,7 @@ func syncCommand(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	if err := createZipArchive(matchedFiles, zipName); err != nil {
+	if err := createZstdArchive(matchedFiles, zipName); err != nil {
 		fmt.Println("Error creating zip archive:", err)
 		return
 	}

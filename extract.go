@@ -31,9 +31,9 @@ func extractCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	zipName := filepath.Join(syncConfig.CloudDir, fmt.Sprintf("%s_%s.zip", branch, commit))
+	zipName := filepath.Join(syncConfig.CloudDir, fmt.Sprintf("%s_%s.zstd", branch, commit))
 
-	if err := extractZip(zipName, path); err != nil {
+	if err := extractZstdArchive(zipName, path); err != nil {
 		fmt.Println("Error extracting zip archive:", err)
 		return
 	}
