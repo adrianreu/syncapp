@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 
 	"github.com/klauspost/compress/zstd"
 )
@@ -20,7 +21,11 @@ func createZstdArchive(files []string, archiveName string) error {
 	defer outFile.Close()
 
 	// Initialize the Zstandard encoder
-	enc, err := zstd.NewWriter(outFile)
+	enc, err := zstd.NewWriter(
+		outFile,
+		zstd.WithEncoderConcurrency(runtime.NumCPU()),
+		zstd.WithEncoderLevel(zstd.SpeedFastest),
+	)
 	if err != nil {
 		return fmt.Errorf("error creating zstd writer: %v", err)
 	}
