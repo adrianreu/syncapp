@@ -12,16 +12,22 @@ func main() {
 	var rootCmd = &cobra.Command{Use: "syncapp"}
 
 	// Sync command
+	var initCmd = &cobra.Command{
+		Use:   "init",
+		Short: "init syncapp repo",
+		Run:   initCommand,
+	}
+	// Sync command
 	var syncCmd = &cobra.Command{
-		Use:   "sync",
-		Short: "Sync files for the current commit",
+		Use:   "push",
+		Short: "push files for the current commit",
 		Run:   syncCommand,
 	}
 
 	// Extract command
 	var extractCmd = &cobra.Command{
-		Use:   "extract",
-		Short: "Extract synced files for the current branch and commit",
+		Use:   "pull",
+		Short: "Pulled synced files for the current branch and commit",
 		Run:   extractCommand,
 	}
 
@@ -31,6 +37,7 @@ func main() {
 	// Register commands
 	rootCmd.AddCommand(syncCmd)
 	rootCmd.AddCommand(extractCmd)
+	rootCmd.AddCommand(initCmd)
 
 	// Execute the CLI
 	if err := rootCmd.Execute(); err != nil {
