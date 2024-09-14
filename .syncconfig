@@ -1,0 +1,5 @@
+cloud_dir: "D:/MEGASync/Dev/test"
+keep_latest: true
+patterns:
+  - "assets"
+  - "*.jpg"
