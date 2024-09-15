@@ -9,12 +9,12 @@ import (
 var path string // Global variable for the path
 
 func main() {
-	var rootCmd = &cobra.Command{Use: "syncapp"}
+	var rootCmd = &cobra.Command{Use: "syncwave"}
 
 	// Sync command
 	var initCmd = &cobra.Command{
 		Use:   "init",
-		Short: "init syncapp repo",
+		Short: "init syncwave repo",
 		Run:   initCommand,
 	}
 	// Sync command

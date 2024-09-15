@@ -1,10 +1,10 @@
 <!-- Center the SVG logo -->
 <div align="center">
-  <img src="logo.svg" alt="SyncApp Logo" width="25%"/>
-  <h1>SyncApp</h1>
+  <img src="logo.svg" alt="Syncwave Logo" width="25%"/>
+  <h1>Syncwave</h1>
 </div>
 
-SyncApp is a command-line tool designed for syncing files and directories using
+Syncwave is a command-line tool designed for syncing files and directories using
 efficient compression methods, like zstd. It integrates with Git by adding hooks
 to automatically sync files on push and pull operations. This tool simplifies
 managing large files or assets in Git repositories without committing them
@@ -27,8 +27,8 @@ directly.
 1. **Clone the repository**:
 
 ```bash
-git clone https://github.com/yourusername/syncapp.git
-cd syncapp
+git clone https://github.com/yourusername/syncwave.git
+cd syncwave
 ```
 
 2. **Build the application**:
@@ -37,32 +37,32 @@ You need to have Go installed. You can install Go from
 [here](https://golang.org/doc/install).
 
 ```bash
-go build -o syncapp
+go build -o syncwave
 ```
 
 For windows:
 
 ```bash
-go build -o syncapp.exe
+go build -o syncwave.exe
 ```
 
 3. **Move the binary** to your system's `PATH` for easy access (optional but
    recommended):
 
 ```bash
-mv syncapp /usr/local/bin/
+mv syncwave /usr/local/bin/
 ```
 
 ## Usage
 
-### Initialize SyncApp
+### Initialize Syncwave
 
-To set up SyncApp in your Git project, run the following command. This will
+To set up Syncwave in your Git project, run the following command. This will
 create a `sync.yaml` file and add Git hooks to manage syncing on push and
 checkout.
 
 ```bash
-syncapp init
+syncwave init
 ```
 
 - sync.yaml: This file contains your sync configuration, such as file patterns
@@ -73,7 +73,7 @@ syncapp init
 You can manually trigger a sync of your files by running the following command:
 
 ```bash
-syncapp sync
+syncwave sync
 ```
 
 This will create a compressed zstd archive of the specified files based on the
@@ -81,20 +81,20 @@ patterns in `sync.yaml`.
 
 ### Pulling Synced Files
 
-When you switch branches or perform a Git checkout, SyncApp will automatically
+When you switch branches or perform a Git checkout, Syncwave will automatically
 pull synced files from the cloud directory. You can manually pull files using:
 
 ```bash
-syncapp pull
+syncwave pull
 ```
 
 ### Pushing Synced Files
 
-Before pushing changes to a Git repository, SyncApp will automatically push
+Before pushing changes to a Git repository, Syncwave will automatically push
 synced files. To manually trigger this process:
 
 ```bash
-syncapp push
+syncwave push
 ```
 
 ### Configuring `sync.yaml`
@@ -108,7 +108,7 @@ branch should be kept.
 Example `sync.yaml`:
 
 ```yaml
-# sync.yaml - SyncApp configuration file
+# sync.yaml - Syncwave configuration file
 cloud_dir: "/path/to/cloud"
 patterns:
   - "*.jpg"
@@ -125,12 +125,12 @@ keep_latest: true
 
 ## Git Integration
 
-SyncApp automatically manages Git hooks:
+Syncwave automatically manages Git hooks:
 
-- **Pre-push hook**: Runs `syncapp push` before pushing changes to the remote
+- **Pre-push hook**: Runs `syncwave push` before pushing changes to the remote
   repository.
-- **Post-checkout hook**: Runs `syncapp pull` after a Git checkout. These hooks
-  are set up when you run ``syncapp`` init.
+- **Post-checkout hook**: Runs `syncwave pull` after a Git checkout. These hooks
+  are set up when you run ``syncwave`` init.
 
 ## Contributing
 

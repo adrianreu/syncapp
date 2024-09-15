@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO fix this
 func extractCommand(cmd *cobra.Command, args []string) {
 	if err := os.Chdir(path); err != nil {
 		fmt.Println("Error changing directory:", err)

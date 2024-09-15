@@ -13,7 +13,7 @@ import (
 func initCommand(cmd *cobra.Command, args []string) {
 	// 1. Create sync.yaml if it doesn't exist
 	if _, err := os.Stat("sync.yaml"); os.IsNotExist(err) {
-		defaultConfig := `# sync.yaml - SyncApp configuration file
+		defaultConfig := `# sync.yaml - Syncwave configuration file
 cloud_dir: "/path/to/cloud"
 keep_latest: true
 patterns:
@@ -37,7 +37,7 @@ patterns:
 	fmt.Println("Please edit sync.yaml with your configuration.")
 }
 
-// Setup pre-push and post-checkout Git hooks to run syncapp
+// Setup pre-push and post-checkout Git hooks to run syncwave
 func setupGitHooks() error {
 	// Check if .git/hooks exists
 	hookDir := filepath.Join(".git", "hooks")
@@ -45,16 +45,16 @@ func setupGitHooks() error {
 		return fmt.Errorf(".git/hooks directory does not exist, make sure this is a Git repository")
 	}
 
-	// 1. Pre-push hook to run syncapp push
+	// 1. Pre-push hook to run syncwave push
 	prePushHookPath := filepath.Join(hookDir, "pre-push")
-	prePushHook := "#!/bin/sh\n# Pre-push hook for SyncApp\nsyncapp push\n"
+	prePushHook := "#!/bin/sh\n# Pre-push hook for Syncwave\nsyncwave push\n"
 	if err := writeHook(prePushHookPath, prePushHook); err != nil {
 		return err
 	}
 
-	// 2. Post-checkout hook to run syncapp pull
+	// 2. Post-checkout hook to run syncwave pull
 	postCheckoutHookPath := filepath.Join(hookDir, "post-checkout")
-	postCheckoutHook := "#!/bin/sh\n# Post-checkout hook for SyncApp\nsyncapp pull\n"
+	postCheckoutHook := "#!/bin/sh\n# Post-checkout hook for Syncwave\nsyncwave pull\n"
 	if err := writeHook(postCheckoutHookPath, postCheckoutHook); err != nil {
 		return err
 	}
