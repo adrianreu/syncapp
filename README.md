@@ -1,10 +1,15 @@
-# SyncApp
+<!-- Center the SVG logo -->
+<div align="center">
+  <img src="logo.svg" alt="SyncApp Logo" width="25%"/>
+  <h1>SyncApp</h1>
+</div>
 
 SyncApp is a command-line tool designed for syncing files and directories using
 efficient compression methods, like zstd. It integrates with Git by adding hooks
 to automatically sync files on push and pull operations. This tool simplifies
 managing large files or assets in Git repositories without committing them
 directly.
+
 
 ## Features
 
