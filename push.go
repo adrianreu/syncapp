@@ -36,7 +36,7 @@ func syncCommand(cmd *cobra.Command, args []string) {
 		if err != nil {
 			return err
 		}
-		if matchesSyncPattern(path) {
+		if matchesSyncPatternAndCheckFileSize(path) {
 			matchedFiles = append(matchedFiles, path)
 		}
 		return nil
@@ -67,7 +67,7 @@ func syncCommand(cmd *cobra.Command, args []string) {
 
 	fmt.Println("Zip file created:", zipName)
 
-	if err := updateGitIgnore(matchedFiles); err != nil {
+	if err := updateGitIgnore(); err != nil {
 		fmt.Println("Error updating .gitignore:", err)
 		return
 	}

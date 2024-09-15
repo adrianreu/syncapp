@@ -13,6 +13,12 @@ import (
 
 // Create a Zstandard-compressed archive of the provided files and directories.
 func createZstdArchive(files []string, archiveName string) error {
+	// Ensure the directory for the archive exists
+	archiveDir := filepath.Dir(archiveName)
+	err := os.MkdirAll(archiveDir, 0755) // 0755 gives read/write/execute permissions to the owner, and read/execute permissions to others
+	if err != nil {
+		return err
+	}
 	// Create the output .zst file
 	outFile, err := os.Create(archiveName)
 	if err != nil {
