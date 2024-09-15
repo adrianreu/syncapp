@@ -4,4 +4,4 @@ patterns:
   - "assets"
   - "*.jpg"
   - "test"
-min_file_size_kb: 20
+# min_file_size_kb: 20
